@@ -1,4 +1,3 @@
-import os
 from uuid import uuid4
 
 import pytest
@@ -7,21 +6,6 @@ from alembic.config import Config
 from sqlalchemy import create_engine, delete, func, inspect, select
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
-
-@pytest.fixture
-def test_database_url() -> str:
-    url = os.getenv("TEST_DATABASE_URL")
-    development_url = os.getenv("DATABASE_URL")
-    if not url:
-        pytest.fail("Set TEST_DATABASE_URL to a separate PostgreSQL test database")
-    if not development_url:
-        pytest.fail("Set DATABASE_URL to the development PostgreSQL database")
-    if not url.startswith("postgresql+psycopg://"):
-        pytest.fail("TEST_DATABASE_URL must use PostgreSQL via psycopg")
-    if url == development_url:
-        pytest.fail("TEST_DATABASE_URL must differ from DATABASE_URL")
-    return url
-
 
 def test_models_round_trip_in_memory() -> None:
     from app.db import Base
