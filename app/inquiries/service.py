@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -12,6 +14,10 @@ class CustomerNotFound(Exception):
 
 class IdempotencyConflict(Exception):
     pass
+
+
+def get_inquiry(session: Session, inquiry_id: UUID) -> Inquiry | None:
+    return session.get(Inquiry, inquiry_id)
 
 
 def existing_inquiry(session: Session, data: InquiryCreate) -> Inquiry | None:

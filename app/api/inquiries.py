@@ -1,11 +1,12 @@
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 
 from app.db import get_session
 from app.inquiries.schemas import InquiryCreate, InquiryResponse
-from app.inquiries.service import CustomerNotFound, IdempotencyConflict, create_inquiry
+from app.inquiries.service import CustomerNotFound, IdempotencyConflict, create_inquiry, get_inquiry
 
 router = APIRouter(prefix="/inquiries", tags=["inquiries"])
 
@@ -33,4 +34,16 @@ def post_inquiry(
         ) from None
     if not created:
         response.status_code = 200
+    return InquiryResponse.model_validate(inquiry)
+
+
+@router.get("/{inquiry_id}", response_model=InquiryResponse,
+            responses={404: {"description": "Inquiry not found"}})
+def read_inquiry(
+    inquiry_id: UUID,
+    session: Annotated[Session, Depends(get_session)],
+) -> InquiryResponse:
+    inquiry = get_inquiry(session, inquiry_id)
+    if inquiry is None:
+        raise HTTPException(status_code=404, detail="Inquiry not found")
     return InquiryResponse.model_validate(inquiry)
